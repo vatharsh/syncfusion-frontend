@@ -1,0 +1,92 @@
+<h2 mat-dialog-title>{{data.mode}} Column</h2>
+<mat-dialog-content [formGroup]="form">
+  <mat-form-field>
+    <input
+    matInput
+    type="text"
+    name="name"
+    formControlName="name"
+     placeholder="Column Name" >
+    <mat-error *ngIf="form.get('name').invalid">Please enter a valid column name.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Data Type</mat-label>
+    <mat-select [(value)]="dataType" name="dataType"
+    formControlName="dataType" required>
+      <mat-option value="Text">Text</mat-option>
+      <mat-option value="Num">Num</mat-option>
+      <mat-option value="Date">Date</mat-option>
+      <mat-option value="Boolean">Boolean</mat-option>
+    </mat-select>
+    <mat-error *ngIf="form.get('dataType').invalid">Please select valid data type.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <input
+    matInput
+    type="text"
+    name="defaultValue"
+    formControlName="defaultValue"
+     placeholder="Default Value" >
+    <mat-error *ngIf="form.get('defaultValue').invalid">Please enter a valid default value.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <input
+    matInput
+    type="number"
+    name="minColumnWidth"
+    formControlName="minColumnWidth"
+     placeholder="Min Column Width" >
+    <mat-error *ngIf="form.get('minColumnWidth').invalid">Please enter a valid min column width.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <input
+    matInput
+    type="number"
+    name="fontSize"
+    formControlName="fontSize"
+     placeholder="Font Size" >
+    <mat-error *ngIf="form.get('fontSize').invalid">Please enter a valid font size.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <input
+    matInput
+    type="text"
+    name="fontColor"
+    formControlName="fontColor"
+     placeholder="Font Color" >
+    <mat-error *ngIf="form.get('fontColor').invalid">Please enter a valid font color.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <input
+    matInput
+    type="text"
+    name="backgroundColor"
+    formControlName="backgroundColor"
+     placeholder="Background Color" >
+    <mat-error *ngIf="form.get('backgroundColor').invalid">Please enter a valid background color.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <input
+    matInput
+    type="text"
+    name="alignment"
+    formControlName="alignment"
+     placeholder="Alignment" >
+    <mat-error *ngIf="form.get('backgroundColor').invalid">Please enter a valid alignment value.</mat-error>
+  </mat-form-field>
+
+  <mat-checkbox indeterminate="true" formControlName="textWrap">Text Wrap
+  </mat-checkbox>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button mat-raised-button color="secondary" size="sm" (click)="save()">Save</button>
+  <button mat-raised-button color="primary" mat-dialog-close tabindex="-1" (click)="close()">Close</button>
+</mat-dialog-actions>

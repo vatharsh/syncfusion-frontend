@@ -1,0 +1,8 @@
+.add-edit-dialog-content {
+  height: 200px;
+  width: 300px;
+}
+
+::ng-deep .model-container {
+  height: 60% !important;
+}

@@ -1,0 +1,85 @@
+
+.e-treegrid .e-row {
+  height: 2em;
+  }
+  #container {
+    display: none;
+}
+
+#loader {
+  color: #008cff;
+  font-family: 'Helvetica Neue','calibiri';
+  font-size: 14px;
+  height: 40px;
+  left: 45%;
+  position: absolute;
+  top: 45%;
+  width: 30%;
+}
+
+#menu-right-click,#context-menu-edit,#menu-right-click-row,
+#context-menu-add,#trigger-defaults-initial-load-events,
+#change-text,#context-menu-choose {
+  display: none;
+}
+
+.ui-dialog {
+  font-size:10px !important;
+}
+
+.context-menu-btn {
+  width: 85%;
+    border: 1px solid grey;
+    /* border-radius: 6px; */
+    padding: 7px;
+    clear: both;
+    margin-top: 2px;
+    background-color: antiquewhite;
+    text-align: center;
+    cursor: pointer;
+}
+
+.chkBoxLbl {
+  cursor: pointer;
+}
+
+#context-menu-edit input[type=button],
+#context-menu-add input[type=button],
+#context-menu-choose input[type=button]
+{
+  margin: 2px;
+  width: 45px;
+  margin-top:10px;
+}
+
+.tree-grid-toolkit-placeholder {
+  padding: 10px;
+  background-color: aliceblue;
+}
+
+.tree-grid-toolkit-placeholder button {
+  cursor: pointer;
+}
+
+::ng-deep .e-row-cut-copy td {
+  background: pink !important;
+}
+
+::ng-deep .e-row-active td {
+  background: #e0e0e0 !important;
+  color: #000;
+}
+
+::ng-deep .e-treegrid .e-row {
+  height: 2em;
+  }
+
+.tree-grid-toolkit-placeholder {
+  display: none;
+}
+
+
+
+
+
+
