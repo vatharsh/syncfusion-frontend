@@ -9,15 +9,29 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 export class AddEditColumnComponent implements OnInit {
   form:FormGroup;
   dataType = ['Text', 'Num','Date','Boolean'];
+  selectedDataType ='Text'
   textWrap = false;
   localHeaderObj;
+  element=null;
+  elementList = [];
+
   constructor(@Inject(MAT_DIALOG_DATA) public data: {mode:string,title:string,obj:Object},
   private dialogRef: MatDialogRef<AddEditColumnComponent>) {
     this.localHeaderObj = {...data.obj};
-    console.log(this.localHeaderObj);
+    this.selectedDataType =this.localHeaderObj.dataType;
+    if(typeof(this.localHeaderObj.dropDownValues)!="undefined") {
+      if(this.localHeaderObj.dropDownValues.length > 0) {
+        this.localHeaderObj.dropDownValues.forEach(element => {
+          this.elementList.push(element);
+        });
+      }
+    }
   }
 
   ngOnInit(): void {
+    this.textWrap =this.localHeaderObj == null ?
+    false : this.localHeaderObj.textWrap;
+
     this.form = new FormGroup({
       'name' : new FormControl(this.localHeaderObj == null ?
         null : this.localHeaderObj.name,{
@@ -51,19 +65,47 @@ export class AddEditColumnComponent implements OnInit {
         null : this.localHeaderObj.alignment,{
         validators: [Validators.required]
       }),
-      'textWrap' : new FormControl(this.localHeaderObj == null ?
-        null : this.localHeaderObj.textWrap,{
+      'textWrap' : new FormControl({
         validators: [Validators.required]
-      })
+      }),
+      'dropDownValues' : new FormControl(this.elementList)
     });
   }
 
+  dataTypeSelected() {
+      //console.log(this.selectedDataType)
+  }
+
+  addElement() {
+    if(typeof(this.element)!="undefined" && this.element != null && this.element.trim() !='') {
+      if(this.elementList.indexOf(this.element) === -1 ) {
+        this.elementList.push(this.element);
+        this.element = null;
+      }
+      else alert("Item already exists!");
+    }
+  }
+
+  deleteElement(ele) {
+    var index = this.elementList.indexOf(ele);
+    this.elementList.splice(index,1);
+
+  }
+
   close() {
+    // console.log(this.form.value);
     this.dialogRef.close();
   }
 
   save() {
-    //console.log(this.form.invalid);
+    if(this.selectedDataType == 'DropDownList' && this.elementList.length ==0) {
+      alert('Enter valid dropdown values!');
+      return;
+    }
+    //console.log(this.form.value);
+    this.form.patchValue({
+          'dropDownValues' : this.elementList
+    });
     if(this.form.invalid) return;
     else {
       this.dialogRef.close(this.form.value);

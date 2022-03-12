@@ -61,14 +61,16 @@
   cursor: pointer;
 }
 
-::ng-deep .e-row-cut-copy td {
+/* ::ng-deep .e-row-cut-copy td {
   background: pink !important;
 }
+
+
 
 ::ng-deep .e-row-active td {
   background: #e0e0e0 !important;
   color: #000;
-}
+} */
 
 ::ng-deep .e-treegrid .e-row {
   height: 2em;
@@ -76,6 +78,12 @@
 
 .tree-grid-toolkit-placeholder {
   display: none;
+}
+
+.disabled{
+  opacity: 0.5;
+  pointer-events: none;
+
 }
 
 

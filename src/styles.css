@@ -29,12 +29,28 @@
   display: none;
 }
 
-/* .e-row td.e-active {
+.e-grid td.e-active {
   background: #e0e0e0 !important;
   color: #000;
-} */
+}
+
+.e-grid tr.e-row-cut-copy td{
+  background: pink !important;
+  color: #000;
+}
 
 
 /* .e-columnheader .e-headercell.e-mousepointer:nth-child(2) {color: red} */
 
+.e-spin-show,#loader {
+  z-index:9999999;
+}
 
+.selected-menu-item {
+  background-color: lightblue !important;
+}
+
+/* .e-grid .e-table {
+  width: 100%!important;
+  max-width: 1200px!important;
+} */

@@ -12,25 +12,17 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Data Type</mat-label>
-    <mat-select [(value)]="dataType" name="dataType"
-    formControlName="dataType" required>
+    <mat-select [(value)]="selectedDataType" name="dataType"
+    formControlName="dataType" required (selectionChange)="dataTypeSelected()">
       <mat-option value="Text">Text</mat-option>
       <mat-option value="Num">Num</mat-option>
       <mat-option value="Date">Date</mat-option>
       <mat-option value="Boolean">Boolean</mat-option>
+      <mat-option value="DropDownList">DropDownList</mat-option>
     </mat-select>
     <mat-error *ngIf="form.get('dataType').invalid">Please select valid data type.</mat-error>
   </mat-form-field>
 
-  <mat-form-field>
-    <input
-    matInput
-    type="text"
-    name="defaultValue"
-    formControlName="defaultValue"
-     placeholder="Default Value" >
-    <mat-error *ngIf="form.get('defaultValue').invalid">Please enter a valid default value.</mat-error>
-  </mat-form-field>
 
   <mat-form-field>
     <input
@@ -79,10 +71,49 @@
     name="alignment"
     formControlName="alignment"
      placeholder="Alignment" >
-    <mat-error *ngIf="form.get('backgroundColor').invalid">Please enter a valid alignment value.</mat-error>
+    <mat-error *ngIf="form.get('alignment').invalid">Please enter a valid alignment value.</mat-error>
   </mat-form-field>
 
-  <mat-checkbox indeterminate="true" formControlName="textWrap">Text Wrap
+
+  <mat-form-field>
+    <input
+    matInput
+    type="text"
+    name="defaultValue"
+    formControlName="defaultValue"
+     placeholder="Default Value" >
+    <mat-error *ngIf="form.get('defaultValue').invalid">Please enter a valid default value.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field  *ngIf="selectedDataType =='DropDownList'">
+    <tr>
+      <td>
+        <input
+        matInput
+        [ngModelOptions]="{standalone: true}"
+        [(ngModel)]="element"
+        type="text"
+        name="dropDownValues"
+        formControlName="dropDownValues"
+        placeholder="Enter Drop Down Values">
+      </td>
+      <span style="margin-left: 30px;">
+      <fa-icon fa-1x icon="plus" class="faIcons add" (click)="addElement()"></fa-icon>
+    </span>
+      <td>
+    </td>
+   </tr>
+   <table  class="table-element-list">
+     <tr *ngFor="let ele of elementList">
+       <td>{{ele}}</td>
+       <td>
+        <fa-icon fa-1x icon="minus" class="faIcons minus" (click)="deleteElement(ele)"></fa-icon>
+       </td>
+     </tr>
+   </table>
+  </mat-form-field>
+  <span style="padding: 10px; font-size: 14px;">Text Wrap </span>
+  <mat-checkbox formControlName="textWrap" [(ngModel)]="textWrap" [checked]="textWrap">
   </mat-checkbox>
 </mat-dialog-content>
 

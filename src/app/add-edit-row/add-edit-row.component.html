@@ -1,13 +1,22 @@
 <h1 mat-dialog-title>{{data.mode}} Row</h1>
 <mat-dialog-content [formGroup]="addEditRowForm">
   <div  *ngFor="let  col of columns;let i=index" class="container">
-    <mat-form-field *ngIf="col.name !='TaskID'">
+    <mat-form-field *ngIf="col.name !='TaskID' && col.dataType !='DropDownList'">
       <input
       matInput
       type="text"
       name="{{col.name}}"
       formControlName="{{col.name}}"
        placeholder="{{col.name}}" >
+      <mat-error *ngIf="addEditRowForm.get(col.name).invalid">Please enter a valid {{col.name}} value.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field  *ngIf="col.name !='TaskID' && col.dataType =='DropDownList'">
+      <mat-label>{{col.name}}</mat-label>
+      <mat-select [(ngModel)]="col.defaultValue" name="{{col.name}}"
+      formControlName="{{col.name}}">
+        <mat-option *ngFor="let item of col.dropDownValues" [value]="item">{{item}}</mat-option>
+      </mat-select>
       <mat-error *ngIf="addEditRowForm.get(col.name).invalid">Please enter a valid {{col.name}} value.</mat-error>
     </mat-form-field>
   </div>

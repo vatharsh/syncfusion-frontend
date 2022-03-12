@@ -6,3 +6,27 @@
 ::ng-deep .model-container {
   height: 60% !important;
 }
+
+.faIcons {
+  cursor: pointer;
+}
+
+.add {
+  color: chartreuse;
+}
+
+.minus {
+  color: crimson;
+}
+
+.list-elements {
+  height :100%
+}
+
+.table-element-list{
+    width: 100%;
+    padding-left: 26%;
+    font-size: 12px;
+    /* font-weight: bold; */
+    color:#f44336;
+}

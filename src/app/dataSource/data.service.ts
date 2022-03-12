@@ -38,9 +38,9 @@ export class DataService  {
           alert(response.message);
         }
     });
-    }
+  }
 
-   addHeaderColumnName(id:string, colName: string){
+  addHeaderColumnName(id:string, colName: string){
       let headerColumnData;
 
       headerColumnData = {
@@ -54,9 +54,9 @@ export class DataService  {
             alert(response.message);
           }
       });
-     }
+  }
 
-   deleteHeaderColumnName(id:string){
+  deleteHeaderColumnName(id:string){
         let headerColumnData;
 
         headerColumnData = {
@@ -69,7 +69,7 @@ export class DataService  {
               alert(response.message);
             }
         });
-     }
+  }
 
   addHeaderColumnObject(id,obj) {
     //{ "name":"taskID","dataType": "Num","defaultValue": 0,"minColumnWidth":20,"fontSize":10,"fontColor":"red","backgroundColor":"red","alignment":"right","textWrap":true}
@@ -171,10 +171,10 @@ export class DataService  {
     });
   }
 
-  deleteRow(selectedRowObject:Object) {
+  deleteRow(selectedRowObjects:any) {
     let deleteRowEvent;
     deleteRowEvent = {
-      selectedRowObj:selectedRowObject
+      selectedRowObjs:selectedRowObjects
     };
     // console.log(addRowEvent);
     this.http.put(BACKEND_URL+"/deleteRow",deleteRowEvent).subscribe((response:any)=>{
@@ -245,6 +245,22 @@ export class DataService  {
     };
     // console.log(addRowEvent);
     this.http.put(BACKEND_URL+"/pasteRowDataTop",pasteRowTopEvent).subscribe((response:any)=>{
+      if(response.message=='success') {
+        this.dataServiceListener.next(true);
+      } else {
+        alert(response.message);
+      }
+    });
+  }
+
+  dragDropColumn(columnCurrIndex,columnObj,targetIndex) {
+    let dropColumnEvent;
+    dropColumnEvent = {
+      columnCurrIndex : columnCurrIndex,
+      columnObj:columnObj,
+      targetIndex:targetIndex
+    };
+    this.http.put(BACKEND_URL+"/dragDropColumn",dropColumnEvent).subscribe((response:any)=>{
       if(response.message=='success') {
         this.dataServiceListener.next(true);
       } else {

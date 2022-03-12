@@ -44,20 +44,25 @@ $(function(){
     triggered =false;
   });
 
+
+
   $(document).on("DOMSubtreeModified", function(e) {
+    $('tr.e-row').off();
     treeHeaderRightClick();
     treeRowRightClick();
     bindPressureEventHeader();
-    bindPressureEventRow();
+    // bindPressureEventRow();
 
-    $('.e-rowdragdrop').off().on('mousedown',function(){
-      drag =false;
-    });
-    $('.e-rowdragdrop').off().on('mousemove',function(){
-      drag =true;
-    });
-    $('.e-rowdragdrop').off().on('mouseup',function(){
-      drag =false;
+    $('div.e-rowcelldrag').off().on('click',function(e){
+      console.log(e.target);
+      var $this = $(this);
+      var tr = $this.parents().eq(1);
+      // console.log(tr)
+      setTimeout(() => {
+        // console.log(drag);
+        if(!drag)
+          rowDragAndDropClickedForContextMenuRow(tr,e);
+      }, 1000);
     });
 
     $('div.e-content').off().on('scroll', () => {
@@ -65,6 +70,15 @@ $(function(){
       clearTimeout(onScrollStopped.timeout);
       onScrollStopped.timeout = setTimeout(onScrollStopped, 200);
     });
+
+    $('td.e-rowdragdrop').on('mousedown',function(){
+      drag =false;
+    }).on('mousemove',function(){
+      drag =true;
+    }).on('mouseup',function(){
+      drag =false;
+    });
+
   });
 
   timerPlaceHolder = setTimeout(() => {
@@ -99,17 +113,20 @@ function bindPressureEventHeader() {
     $('th.e-headercell').pressure({
       start: function(event){
         // this is called on force start
+        $('#pressure-event-triggered-val').val(1);
         touchEvent=true;
       },
       end: function(){
         // this is called on force end
+        $('#pressure-event-triggered-val').val(0);
       },
       startDeepPress: function(event){
-        console.log(drag);
+        // console.log(drag);
         // this is called on "force click" / "deep press", aka once the force is greater than 0.5
         if(touchEvent && !scrolling && !drag) {
           var $this = $(this);
           longPressHeader($this,event.x,event.y);
+          $('#pressure-event-triggered-val').val(1);
           touchEvent = false;
         }
       },
@@ -117,6 +134,7 @@ function bindPressureEventHeader() {
         touchEvent = false;
         scrolling=false;
         // this is called when the "force click" / "deep press" end
+        $('#pressure-event-triggered-val').val(0);
       },
       change: function(force, event){
         // this is called every time there is a change in pressure
@@ -137,30 +155,42 @@ function bindPressureEventHeader() {
 function bindPressureEventRow() {
     $('tr.e-row').pressure({
       start: function(event){
+        $('#pressure-event-triggered-val').val(1);
         // this is called on force start
         touchEvent=true;
+        var $this = $(this);
+        var currElem = $this;
+        indexCurrSelectedRow =  currElem[0].ariaRowIndex;
+        $('#current-selected-row-index').val(indexCurrSelectedRow);
       },
       end: function(){
         // this is called on force end
         touchEvent = false;
         scrolling=false;
+        $('#pressure-event-triggered-val').val(0);
       },
       startDeepPress: function(event){
         // this is called on "force click" / "deep press", aka once the force is greater than 0.5
-        if(touchEvent && !scrolling && !drag) {
+        // console.log(touchEvent+'---'+scrolling+'----'+drag);
+        //console.log('in deep press')
+        if(touchEvent && !scrolling && (!drag || drag=='')) {
           var $this = $(this);
           longPressRow($this,event.x,event.y);
+          $('#pressure-event-triggered-val').val(1);
           touchEvent = false;
         }
       },
       endDeepPress: function(){
+        $('#pressure-event-triggered-val').val(1);
         // this is called when the "force click" / "deep press" end
         touchEvent = false;
         scrolling=false
       },
       change: function(force, event){
+          //console.log('force --' +force)
         // this is called every time there is a change in pressure
         // 'force' is a value ranging from 0 to 1
+        $('#pressure-event-triggered-val').val(1);
       },
       unsupported: function(){
         // NOTE: this is only called if the polyfill option is disabled!
@@ -219,7 +249,7 @@ function longPressHeader(ele,x,y){
 
 function treeHeaderRightClick() {
   $('.e-headercell').off().contextmenu(function(e){
-  var $this = $(this);
+    var $this = $(this);
     var currElem = $this;
     if(e.button ==2) {
     initializedContextMenuDialog();
@@ -262,14 +292,17 @@ function longPressRow(ele,x,y){
   var $this = ele;
   var currElem = $this;
   $('div.ui-dialog').remove();
+  //console.log(currElem);
   initializedContextMenu2Dialog();
   clearTimeout(timeoutId);
   var contextMenu = $('#menu-right-click-row').parent();
   currElem.find('td:first').trigger('click');
   //$('.e-row').find('td').removeClass('e-selectionbackground e-active');
   // currElem.find('td').addClass('e-selectionbackground e-active');
+  //console.log(currElem[0].ariaRowIndex);
   indexCurrSelectedRow =  currElem[0].ariaRowIndex;
   $('#current-selected-row-index').val(indexCurrSelectedRow);
+ // console.log($('#current-selected-row-index').val())
   var parentOffset = $this.parent().offset();
   var relX = x;//e.pageX-10;// parentOffset.left;
   var relY =  y;//e.pageY;//parentOffset.top+20;
@@ -277,17 +310,18 @@ function longPressRow(ele,x,y){
   dialogContextMenu2.dialog( "open" );
   contextMenu.css("left",relX);
   contextMenu.css("top",relY);
+  $('#pressure-event-triggered-val').val(0);
 }
 
 function treeRowRightClick() {
-  $('tr.e-row').off().contextmenu(function(e){
+  $('.e-row').off().contextmenu(function(e){
     var $this = $(this);
     var currElem = $this;
     $('div.ui-dialog').remove();
-    initializedContextMenu2Dialog();
     //console.log(currElem);
     if(e.button ==2) {
-      var contextMenu = $('#menu-right-click-row').parent();
+    initializedContextMenu2Dialog();
+    var contextMenu = $('#menu-right-click-row').parent();
       currElem.find('td:first').trigger('click');
       //$('.e-row').find('td').removeClass('e-selectionbackground e-active');
       // currElem.find('td').addClass('e-selectionbackground e-active');
@@ -305,6 +339,24 @@ function treeRowRightClick() {
   });
 }
 
+function rowDragAndDropClickedForContextMenuRow(ele,evt) {
+    var $this = ele;
+    var currElem = $this;
+    $('div.ui-dialog').remove();
+    if(evt.button !=2) {
+      initializedContextMenu2Dialog();
+      var contextMenu = $('#menu-right-click-row').parent();
+      indexCurrSelectedRow =  currElem[0].ariaRowIndex;
+      $('#current-selected-row-index').val(indexCurrSelectedRow);
+      var relX = evt.pageX-10;// parentOffset.left;
+      var relY =  evt.pageY;//parentOffset.top+20;
+
+      dialogContextMenu2.dialog( "open" );
+      contextMenu.css("left",relX);
+      contextMenu.css("top",relY);
+    }
+}
+
 function initializedContextMenuDialog() {
   dialogContextMenu1 = $('#menu-right-click').dialog({
     autoOpen: false,
@@ -317,12 +369,14 @@ function initializedContextMenuDialog() {
       open: function() {
         $('.ui-widget-overlay').on('click', function () {
           //$(this).parents("body").find(".ui-dialog-content").dialog("close");
+          $('#pressure-event-triggered-val').val(0);
           $('div.ui-dialog').remove();
           if(currSelectedHeaderItem != null) currSelectedHeaderItem.parent().removeClass('selected-menu-item');
         });
       }
   }).on('keydown', function(evt) {
     if (evt.keyCode === $.ui.keyCode.ESCAPE) {
+      $('#pressure-event-triggered-val').val(0);
         dialogContextMenu1.dialog('close');
         if(currSelectedHeaderItem != null) currSelectedHeaderItem.parent().removeClass('selected-menu-item');
     }
@@ -341,12 +395,14 @@ function initializedContextMenu2Dialog() {
     closeText: 'Close',
       open: function() {
         $('.ui-widget-overlay').on('click', function () {
+          $('#pressure-event-triggered-val').val(0);
           $('div.ui-dialog').remove();
           //if(currSelectedHeaderItem != null) currSelectedHeaderItem.parent().removeClass('selected-menu-item');
         });
       }
   }).on('keydown', function(evt) {
     if (evt.keyCode === $.ui.keyCode.ESCAPE) {
+      $('#pressure-event-triggered-val').val(0);
         dialogContextMenu2.dialog('close');
         //if(currSelectedHeaderItem != null) currSelectedHeaderItem.parent().removeClass('selected-menu-item');
     }
@@ -397,6 +453,7 @@ function setDefaults() {
   $('#input-menu-add').val('');
   $('#choosefilter').val('');
   $('#freeze-col').prop('checked', false);
+  $('#pressure-event-triggered-val').val(0);
   chooseFilterSearchSetDefaults();
   chooseFilterSearch();
   if(typeof(currSelectedHeaderItem)!= "undefined" && currSelectedHeaderItem != null) currSelectedHeaderItem.parent().removeClass('selected-menu-item');
@@ -441,96 +498,108 @@ function addClassToHeader(elementRef,refName,color,bgColor) {
 }
 
 function maintainStateOfGridAfterActionComplete(headers,bindLocal=false){
-  var isGridLoading = true;
-  var timer = setInterval(function() {
-  isGridLoading = $('.e-spin-show').length > 0;
-  //console.log(headers);
-  resetFilterOnGridActionComplete();
-  //showHideFilterBar();
-  if(bindLocal)headers = localTreeHeadersData;
-  var headerElem = null;
-  var columnindex =-1;
-  if (!isGridLoading && (typeof(headers)!="undefined" && headers !=null && headers !=''))
-    {
-      localTreeHeadersData = headers;
-      var isFreezedColumns = $('.e-table:nth-child(1)').length>0;
-      $.each(headers,function(index,item){
-        //console.log(index);
-        var colName =item.name;
-        var color = item.fontColor;
-        var backGroundColor =item.backgroundColor;
-        //console.log(colName,color,backGroundColor);
+  // var isGridLoading = true;
+  // var timer = setInterval(function() {
+  // isGridLoading = $('.e-spin-show').length > 0;
+  // //console.log(headers);
+  // resetFilterOnGridActionComplete();
+  // //showHideFilterBar();
+  // if(bindLocal)headers = localTreeHeadersData;
+  // var headerElem = null;
+  // var columnindex =-1;
+  // if (!isGridLoading && (typeof(headers)!="undefined" && headers !=null && headers !=''))
+  //   {
+  //     localTreeHeadersData = headers;
+  //     var isFreezedColumns = $('.e-table:nth-child(1)').length>0;
+  //     $.each(headers,function(index,item){
+  //       //console.log(index);
+  //       var colName =item.name;
+  //       var color = item.fontColor;
+  //       var backGroundColor =item.backgroundColor;
+  //       //console.log(colName,color,backGroundColor);
+  //       //e-row-cut-copy e-row-active
+  //       // below is non-freezed columns case
+  //       var columnsInFirstContentGrid = $('.e-content .e-table:first tr:first td.e-rowcell').length;
+  //       //console.log(headers);
+  //       if(columnsInFirstContentGrid == headers.length) {
+  //         headerElem = $('.e-table:first').find('th:contains("'+colName+'")');
+  //         headerElem.css({ backgroundColor: backGroundColor, color:color  });
+  //         columnindex = headerElem.index();
+  //         if(columnindex != -1)
+  //         {
+  //             $('.e-content .e-table:last tr').each(function(){
+  //               var $this= $(this);
+  //               var classListTr = $this.attr('class');
+  //               var tdFirstClass = $this.find('td:first').attr('class');
 
-        // below is non-freezed columns case
-        var columnsInFirstContentGrid = $('.e-content .e-table:first tr:first td').length;
-        if(columnsInFirstContentGrid == headers.length) {
-          headerElem = $('.e-table:first').find('th:contains("'+colName+'")');
-          headerElem.css({ backgroundColor: backGroundColor, color:color  });
-          columnindex = headerElem.index();
+  //               var column = $('td', this).eq(columnindex);
+  //               column.css({ backgroundColor: backGroundColor, color:color  });
+  //               if(item.textWrap == true) {
+  //                 column.addClass('cell-text-wrap');
+  //               } else column.removeClass('cell-text-wrap');
+  //               // $this.attr('class',classListTr);
+  //             });
+  //         }
+  //         if(index == headers.length -1) {
+  //           clearInterval(timer);
+  //           headers = null;
+  //         }
+  //       }
+  //       else {
+  //           for(var i =0;i < columnsInFirstContentGrid;i++) {
+  //             headerElem = $('.e-headercontent .e-table:first').find('th:contains("'+colName+'")');
+  //             headerElem.css({ backgroundColor: backGroundColor, color:color  });
+  //             columnindex = headerElem.index();
 
-          if(columnindex != -1)
-          {
-              $('.e-content .e-table:last tr').each(function(){
-                  var column = $('td', this).eq(columnindex);
-                  column.css({ backgroundColor: backGroundColor, color:color  });
-                  if(item.textWrap == true) {
-                    column.addClass('cell-text-wrap');
-                  } else column.removeClass('cell-text-wrap');
-              });
-          }
-          if(index == headers.length -1) {
-            clearInterval(timer);
-            headers = null;
-          }
-        }
-        else {
-            for(var i =0;i < columnsInFirstContentGrid;i++) {
-              headerElem = $('.e-headercontent .e-table:first').find('th:contains("'+colName+'")');
-              headerElem.css({ backgroundColor: backGroundColor, color:color  });
-              columnindex = headerElem.index();
+  //             if(columnindex != -1)
+  //             {
+  //                 $('.e-content .e-table:first tr').each(function(){
+  //                   var $this= $(this);
+  //                   var classListTr = $this.attr('class');
+  //                   var tdFirstClass = $this.find('td:first').attr('class');
 
-              if(columnindex != -1)
-              {
-                  $('.e-content .e-table:first tr').each(function(){
-                      var column = $('td', this).eq(columnindex);
-                      column.css({ backgroundColor: backGroundColor, color:color  });
+  //                   var column = $('td', this).eq(columnindex);
+  //                   column.css({ backgroundColor: backGroundColor, color:color  });
 
-                      if(item.textWrap == true) {
-                        column.addClass('cell-text-wrap');
-                      } else column.removeClass('cell-text-wrap');
+  //                   if(item.textWrap == true) {
+  //                     column.addClass('cell-text-wrap');
+  //                   } else column.removeClass('cell-text-wrap');
+  //                   //$this.attr('class',classListTr);
+  //                 });
+  //             }
+  //           }
 
-                  });
-              }
-            }
+  //           headerElem = $('.e-headercontent .e-table:last').find('th:contains("'+colName+'")');
+  //           headerElem.css({ backgroundColor: backGroundColor, color:color  });
+  //           columnindex = headerElem.index();
 
-            headerElem = $('.e-headercontent .e-table:last').find('th:contains("'+colName+'")');
-            headerElem.css({ backgroundColor: backGroundColor, color:color  });
-            columnindex = headerElem.index();
+  //             if(columnindex != -1)
+  //             {
+  //               $('.e-content .e-table:last tr').each(function(){
+  //                 var $this= $(this);
+  //                 var classListTr = $this.attr('class');
+  //                 var tdFirstClass = $this.find('td:first').attr('class');
+  //                 //console.log(tdFirstClass);
+  //                 var column = $('td', this).eq(columnindex);
+  //                 column.css({ backgroundColor: backGroundColor, color:color  });
+  //                 if(item.textWrap == true) {
+  //                   column.addClass('cell-text-wrap');
+  //                 } else column.removeClass('cell-text-wrap');
+  //               });
+  //             }
 
-              if(columnindex != -1)
-              {
-                  $('.e-content .e-table:last tr').each(function(){
-                      var column = $('td', this).eq(columnindex);
-                      column.css({ backgroundColor: backGroundColor, color:color  });
+  //             if(index == headers.length -1) {
+  //               clearInterval(timer);
+  //               headers = null;
+  //             }
 
-                      if(item.textWrap == true) {
-                        column.addClass('cell-text-wrap');
-                      } else column.removeClass('cell-text-wrap');
-                  });
-              }
+  //       }
+  //     });
 
-              if(index == headers.length -1) {
-                clearInterval(timer);
-                headers = null;
-              }
-
-        }
-      });
-
-    } else if(typeof(headers)!="undefined" || headers !=null || headers !='') {
-      clearInterval(timer);
-    }
-  }, 200);
+  //   } else if(typeof(headers)!="undefined" || headers !=null || headers !='') {
+  //     clearInterval(timer);
+  //   }
+  // }, 200);
 }
 
 function showFilter(ele) {
@@ -569,6 +638,25 @@ function resetFilterOnGridActionComplete() {
     $('#'+item+'_filterBarcell').parents().eq(1).show();
   });
 }
+
+function bindMinColWidth(headers=null) {
+  setTimeout(() => {
+    Object.keys(headers).map((key) => [Number(key), headers[key]]);
+    var colGroup = $('colgroup');
+    for(var i =0;i < colGroup.length;i++) {
+    var counter =0;
+    var cols = $(colGroup[i]).find('col');
+      for(var y =0;y < cols.length;y++) {
+        if(y>0) {
+          console.log(headers[counter].minColumnWidth);
+          $(cols[y]).css({ 'min-width':headers[counter].minColumnWidth+'px' })
+          counter++;
+        }
+      }
+    }
+  }, 3000);
+}
+
 
 
 

@@ -1323,13 +1323,11 @@ a.ui-button:active,
 }
 
 .ui-widget.ui-widget-content {
-  width: 114px !important;
+  width: 130px !important;
 }
 
 .ui-dialog-titlebar-close {
   visibility: hidden;
 }
 
-.selected-menu-item {
-  background-color: lightblue !important;
-}
+

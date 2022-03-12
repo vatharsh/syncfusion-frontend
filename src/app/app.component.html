@@ -2,9 +2,10 @@
  <div class="tree-grid-toolkit-placeholder" >
    <button onclick="showChooseDialog()" class="btn btn-primary">Show/Hide Columns</button>
  </div>
- <ejs-treegrid #treegrid [allowSelection]='true'(actionComplete)="onTreeGridActionComplete($event)"
- (actionBegin)="onTreeGridActionBegin($event)" (dataBound)="onTreeGridDataBound($event)" (rowDrop)="onTreeGridRowDrop($event)"
- (rowDrag)="onTreeGridRowDrag($event)">
+ <ejs-treegrid #treegrid (actionComplete)="onTreeGridActionComplete($event)"
+ (dataBound)="onTreeGridDataBound($event)" (rowDrop)="onTreeGridRowDrop($event)"
+ (rowSelecting)="onTreeGridRowSelecting($event)" (rowDeselecting)="onTreeGridRowDeslecting($event)"
+ (columnDrop)="onTreeGridColumnDrop($event)" (rowDataBound)="onTreeGridRowDataBound($event)">
 </ejs-treegrid>
 
   <!-- context-menu-1 container -->
@@ -33,6 +34,10 @@
           <input #multiSort type="checkbox"  id ="multi-sort-col" name="multiSortCol" value="multiSortCol" (click)="enableSortOnColumn($event)">
           <label class="chkBoxLbl" for="multiSortCol"> MultiSort</label>
         </div>
+        <!-- <div class="context-menu-btn" style="text-align: left;">
+          <input type="checkbox"  id ="freeze-col" name="freezeCol" value="freezeCol" (click)="disableDragAndDrop($event)">
+          <label class="chkBoxLbl" for="freezeCol"> DisableDragDrop</label>
+        </div> -->
   </div>
 
    <!-- context-menu-2 container -->
@@ -46,7 +51,7 @@
     <div id="del-row" class="context-menu-btn" (click)="deleteRow()">
       DelRow
     </div>
-    <div id="edit-row" class="context-menu-btn" (click)="openEditRowChildDialog()">
+    <div id="edit-row" class="context-menu-btn" (click)="openEditRowDialog()">
       EditRow
     </div>
     <div class="context-menu-btn" style="text-align: left;">
@@ -59,10 +64,10 @@
     <div id="cut-row" class="context-menu-btn" (click)="cutRow()">
       CutRow
     </div>
-    <div id="paste-next-row" class="context-menu-btn" (click)="pasteNext()">
+    <div id="paste-next-row" class="context-menu-btn" [ngClass]="{'disabled': currentSelectedRows.length <=0 || mode == null}" (click)="pasteNext()">
       PasteNext
     </div>
-    <div id="paste-child-row" class="context-menu-btn" (click)="pasteChild()">
+    <div id="paste-child-row" class="context-menu-btn" [ngClass]="{'disabled': currentSelectedRows.length <=0 || mode == null}"  (click)="pasteChild()">
       PasteChild
     </div>
 </div>
@@ -72,16 +77,18 @@
     <input type="text" class="context-menu-btn" id="choosefilter">
     <div *ngFor="let col of chooseColumnOptions; let i = index">
       <input type="checkbox" [attr.id]="'chk-'+col.name" value="{{col.name}}" [checked]="col.isChecked"
-      [(ngModel)]="col.isChecked"/>
+      [(ngModel)]="col.isChecked" (click)="selectAll($event)"/>
       <label [attr.for]="'chk-'+col.name">{{col.name}}</label>
     </div>
     <input id="ok-menu-choose"  type="button" title="Ok" context-val="" value="Ok" (click) ="hideShowSelectedColumns()">
     <input id="cancel-menu-choose"  type="button" title="Cancel" value="Cancel" onclick="closeModal()">
   </div>
 
+
   <input type="hidden" id="current-selected-index">
   <input type="hidden" id="current-selected-row-index">
   <input type="hidden" id="current-frozed-index">
   <input type="hidden" id="current-selected-header-val">
+  <input type="hidden" id="pressure-event-triggered-val">
   <input type="button" id="trigger-defaults-initial-load-events" onclick="triggerEvents()">
 

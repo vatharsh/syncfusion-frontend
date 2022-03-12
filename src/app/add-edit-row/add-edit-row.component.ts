@@ -9,11 +9,12 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 })
 export class AddEditRowComponent implements OnInit {
   addEditRowForm:FormGroup;
+  selectedValue=null;
   columns;
   row;
   constructor(@Inject(MAT_DIALOG_DATA) public data: {mode:string,title:string,obj:any},
   private dialogRef: MatDialogRef<AddEditRowComponent>) {
-    this.columns = data.obj.columns;
+    this.columns = [... data.obj.columns];
     this.row = data.obj.row;
   }
 
@@ -25,9 +26,15 @@ export class AddEditRowComponent implements OnInit {
     let form = {};
     for(let i =0;i < this.columns.length;i++) {
       if(this.columns[i].name != 'TaskID') {
+        if(typeof(this.row)!="undefined" && this.row != null && this.row !='') {
+          if(this.columns[i].dataType == 'DropDownList') {
+            //this.selectedValue = this.row[this.columns[i].name];
+            this.columns[i].defaultValue = this.row[this.columns[i].name];
+          }
+      }
         form[this.columns[i].name] = new FormControl(
           typeof(this.row)!="undefined" && this.row != null && this.row !='' ?
-          this.row.data[this.columns[i].name] :  null,
+          this.row[this.columns[i].name] :  null,
           {
           validators: [Validators.required]
           }
@@ -45,6 +52,7 @@ export class AddEditRowComponent implements OnInit {
   save() {
     if(this.addEditRowForm.invalid) return;
     else {
+      //console.log(this.addEditRowForm.value);
       this.dialogRef.close(this.addEditRowForm.value);
     }
   }

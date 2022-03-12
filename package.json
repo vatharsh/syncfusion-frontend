@@ -8,7 +8,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "aws-deploy":"aws s3 sync dist/frontEnd-demo/ s3://syncfusion-frontend"
+    "aws-deploy": "aws s3 sync dist/frontEnd-demo/ s3://syncfusion-frontend",
+    "heroku-postbuild":"ng build --prod"
   },
   "private": true,
   "dependencies": {

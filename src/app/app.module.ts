@@ -38,6 +38,8 @@ import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
 import { AddEditColumnComponent } from './add-edit-column/add-edit-column.component';
 import { AddEditRowComponent } from './add-edit-row/add-edit-row.component';
+import { FontAwesomeModule, FaIconLibrary } from '@fortawesome/angular-fontawesome';
+import { fas,faPlus,faMinus} from '@fortawesome/free-solid-svg-icons';
 
 const config: SocketIoConfig = { url: environment.socketUrl, options: {transports: ['websocket']} };
 
@@ -54,7 +56,7 @@ const config: SocketIoConfig = { url: environment.socketUrl, options: {transport
     TreeGridModule,
     FormsModule,
     ReactiveFormsModule,
-
+    FontAwesomeModule,
     MatInputModule,
     MatCardModule,
     MatButtonModule,
@@ -87,4 +89,9 @@ const config: SocketIoConfig = { url: environment.socketUrl, options: {transport
     SelectionService,
     ReorderService]
 })
-export class AppModule { }
+export class AppModule {
+  constructor(library: FaIconLibrary) {
+    library.addIconPacks(fas);
+    library.addIcons(faPlus,faMinus);
+  }
+}
