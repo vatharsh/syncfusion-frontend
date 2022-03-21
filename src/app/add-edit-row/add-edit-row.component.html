@@ -4,10 +4,10 @@
     <mat-form-field *ngIf="col.name !='TaskID' && col.dataType !='DropDownList'">
       <input
       matInput
-      type="text"
+      [type]="col.dataType === 'Num' ? 'number' : 'text'"
       name="{{col.name}}"
       formControlName="{{col.name}}"
-       placeholder="{{col.name}}" >
+       placeholder="{{col.name}}">
       <mat-error *ngIf="addEditRowForm.get(col.name).invalid">Please enter a valid {{col.name}} value.</mat-error>
     </mat-form-field>
 

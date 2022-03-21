@@ -41,6 +41,7 @@ export class AppComponent implements OnInit,OnDestroy {
 //{ columns: []};
   public selectionSettings: Object;
   mode = null;
+  gridUpdating = false;
   constructor(private dataService: DataService,private dialog: MatDialog,
    private socketService: SocketService, private render:Renderer2,private elRef:ElementRef) { }
   @ViewChild('treegrid') treegrid : TreeGrid=new TreeGrid();
@@ -69,7 +70,8 @@ export class AppComponent implements OnInit,OnDestroy {
 
     this.dataServiceSub = this.dataService.getDataServiceListener().subscribe(()=>{
       this.treegrid.showSpinner();
-      if(this.treegrid != null) {
+      if(this.treegrid != null && !this.gridUpdating) {
+        this.gridUpdating =true;
         this.dataService.getTreeGridData().subscribe((res:any)=>{
           if(res.message == 'success') {
             this.treegrid.dataSource = [...res.data.data];
@@ -89,8 +91,10 @@ export class AppComponent implements OnInit,OnDestroy {
             this.currentSelectedRows=[];
             bindMinColWidth(this.treeGridHeaders);
             this.mode=null;
+            this.gridUpdating =false;
           } else {
             this.treegrid.hideSpinner();
+            this.gridUpdating =false;
           }
         });
       }
@@ -98,7 +102,8 @@ export class AppComponent implements OnInit,OnDestroy {
 
     this.socketServiceSub = this.socketService.listen('TreeGrid data modified').subscribe( data => {
       this.treegrid.showSpinner();
-      if(data =='CODE:x000SX1') {
+      this.gridUpdating =true;
+        if(data =='CODE:x000SX1') {
         alert('TreeGrid data modified, grid will refresh');
         this.dataService.getTreeGridData().subscribe((res:any)=>{
           //console.log(res);
@@ -117,8 +122,10 @@ export class AppComponent implements OnInit,OnDestroy {
             this.currentSelectedRows=[];
             bindMinColWidth(this.treeGridHeaders);
             this.mode=null;
+            this.gridUpdating =false;
           }else {
             alert(res.message);
+            this.gridUpdating =false;
             this.treegrid.hideSpinner();
           }
         });
@@ -205,8 +212,8 @@ export class AppComponent implements OnInit,OnDestroy {
     {
       var colmElem = { field: headers[i].name, headerText: headers[i].name,
         textAlign: headers[i].alignment,
-        width:'200%',
-        //minWidth:headers[i].minColumnWidth,
+        width:'20px',
+        minWidth:headers[i].minColumnWidth,
         customAttributes: headers[i].textWrap == true ? {
           class: "cell-text-wrap" ,
           ['style']: {
@@ -353,7 +360,7 @@ export class AppComponent implements OnInit,OnDestroy {
       setTimeout(() => {
         this.treegrid.dataSource= this.treeGridData;
         this.treegrid.refreshColumns();
-      }, 500);
+      }, 1000);
 
     }else {
       this.treegrid.enableVirtualization=true;
@@ -362,7 +369,8 @@ export class AppComponent implements OnInit,OnDestroy {
       $('#current-frozed-index').val('');
       setTimeout(() => {
         this.treegrid.dataSource= this.treeGridData;
-        this.treegrid.refreshHeader();
+        // this.treegrid.refreshHeader();
+        this.treegrid.refreshColumns();
         bindMinColWidth(this.treeGridHeaders);
       }, 500);
     }
@@ -846,7 +854,7 @@ export class AppComponent implements OnInit,OnDestroy {
     this.treegrid.showSpinner();
     this.currentSelectedRows.sort((a, b) => parseFloat(a.rowIndex) - parseFloat(b.rowIndex));
     //var rowsObj = [... this.currentSelectedRows];
-    var rowsObj = [... this.treegrid.getSelectedRecords()];
+    var rowsObj:any = [... this.treegrid.getSelectedRecords()];
     var index = $('#current-selected-row-index').val();
     var row = this.treegrid.getRowByIndex(parseInt(index));
     var rowInfo = this.treegrid.getRowInfo(row);
@@ -865,10 +873,30 @@ export class AppComponent implements OnInit,OnDestroy {
         taskId = $('tr[aria-rowindex="'+index+'"]').find('td').eq(1).text();
     //console.log(rowsObj);
 
-
-    this.dataService.pasteRowDataNext(rowsObj,taskId,this.mode);
-    this.currentSelectedRows=[];
-    this.setDefaultsAndBindEventsOnGridReload();
+    var isSameRow = rowsObj.findIndex((o)=>o.TaskID == taskId) > -1;
+    if(this.mode == 'cut') {
+      var sameParent = false;
+      this.traverseParentItem(rowData,rowsObj,(result)=>{
+        sameParent = result;
+      })
+      if(sameParent) {
+        alert('Cannot cut-paste parent into child , operation denied.');
+        this.treegrid.hideSpinner();
+      }
+      else if(!sameParent && !isSameRow) {
+        this.dataService.pasteRowDataChild(rowsObj,taskId,this.mode);
+        this.currentSelectedRows=[];
+        this.setDefaultsAndBindEventsOnGridReload();
+      }
+      else {
+        alert('Identical redords, operation denied.')
+        this.treegrid.hideSpinner();
+      }
+    } else {
+      this.dataService.pasteRowDataNext(rowsObj,taskId,this.mode);
+      this.currentSelectedRows=[];
+      this.setDefaultsAndBindEventsOnGridReload();
+    }
   }
 
   pasteChild() {
@@ -877,20 +905,21 @@ export class AppComponent implements OnInit,OnDestroy {
     //var rowsObj = [... this.currentSelectedRows];
     var rowsObj:any = [... this.treegrid.getSelectedRecords()];
     var index = $('#current-selected-row-index').val();
-    //console.log(index);
 
     var row = this.treegrid.getRowByIndex(parseInt(index));
     var rowInfo = this.treegrid.getRowInfo(row);
-    var rowData = rowInfo.rowData;
+    var rowData:any = rowInfo.rowData;
     // console.log(row);
-    // console.log(rowData);
+    // console.log(rowData.parentItem);
+    // console.log(rowsObj);
+
     if(typeof(rowData) =='undefined') return false;
     var taskId = 0;
     for(const prop in rowData){
       if (rowData.hasOwnProperty(prop)) {
         if(prop == 'TaskID') {
             taskId = rowData[prop];
-            console.log(taskId)
+            //console.log(taskId)
             break;
         }
      }
@@ -900,16 +929,53 @@ export class AppComponent implements OnInit,OnDestroy {
     // var isSameRow = rowsObj.findIndex((o)=>o.data.TaskID == taskId) > -1;
     var isSameRow = rowsObj.findIndex((o)=>o.TaskID == taskId) > -1;
     if(this.mode == 'cut') {
-      if(!isSameRow)
+      var sameParent = false;
+      this.traverseParentItem(rowData,rowsObj,(result)=>{
+        sameParent = result;
+      })
+      if(sameParent) {
+        alert('Cannot cut-paste parent into child , operation denied.');
+        this.treegrid.hideSpinner();
+      }
+      else if(!sameParent && !isSameRow){
         this.dataService.pasteRowDataChild(rowsObj,taskId,this.mode);
+        this.currentSelectedRows=[];
+        this.setDefaultsAndBindEventsOnGridReload();
+      }
       else {
-        alert('Identical parent child combination, operation denied.')
+        alert('Identical parent child combination, operation denied.');
+        this.treegrid.hideSpinner();
       }
     } else {
-            this.dataService.pasteRowDataChild(rowsObj,taskId,this.mode);
+          this.dataService.pasteRowDataChild(rowsObj,taskId,this.mode);
+          this.currentSelectedRows=[];
+          this.setDefaultsAndBindEventsOnGridReload();
     }
-    this.currentSelectedRows=[];
-    this.setDefaultsAndBindEventsOnGridReload();
+
+  }
+
+  traverseParentItem(rowData,rowsObj,callback) {
+    for(const prop in rowData){
+      if(rowData.hasOwnProperty(prop)) {
+        if(prop == 'parentItem') {
+            const taskId = rowData[prop].TaskID;
+            var hasSameParent = rowsObj.findIndex((o)=>o.TaskID == taskId) > -1;
+            if(hasSameParent) {
+              callback(hasSameParent);
+            }
+            else {
+              this.traverseParentItem(rowData[prop],rowsObj,callback);
+            }
+        }
+        else {
+          const taskId = rowData.TaskID;
+          var hasSameParent = rowsObj.findIndex((o)=>o.TaskID == taskId) > -1;
+          if(hasSameParent) {
+            callback(hasSameParent);
+          }
+        }
+      }
+    }
   }
 
   ngOnDestroy(): void {

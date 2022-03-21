@@ -23,11 +23,16 @@ var scrolling = false;
 var timerPlaceHolder =-1;
 var eventBindingDoneOnLoad =false;
 var triggered = false;
-
+var isHeaderPressureBindEventTriggered = false;
 // end - global variables
 
 // initial load
 $(function(){
+
+  setInterval(() => {
+      bindPressureEventHeader();
+  }, 500);
+
   $('.ui-widget-overlay').on('click', function () {
     $(this).parents("body").find(".ui-dialog-content").dialog("close");
   });
@@ -45,16 +50,16 @@ $(function(){
   });
 
 
-
   $(document).on("DOMSubtreeModified", function(e) {
     $('tr.e-row').off();
+      $('th.e-headercell').off();
     treeHeaderRightClick();
     treeRowRightClick();
-    bindPressureEventHeader();
+    //bindPressureEventHeader();
     // bindPressureEventRow();
 
     $('div.e-rowcelldrag').off().on('click',function(e){
-      console.log(e.target);
+      // console.log(e.target);
       var $this = $(this);
       var tr = $this.parents().eq(1);
       // console.log(tr)
@@ -78,6 +83,7 @@ $(function(){
     }).on('mouseup',function(){
       drag =false;
     });
+  
 
   });
 
@@ -110,25 +116,32 @@ function showHidePlaceHolder() {
 }
 
 function bindPressureEventHeader() {
+  var isDrag = false;
+  isHeaderPressureBindEventTriggered = true;
     $('th.e-headercell').pressure({
       start: function(event){
         // this is called on force start
+        isDrag = $('.e-dragclone').is(':visible');
         $('#pressure-event-triggered-val').val(1);
         touchEvent=true;
       },
       end: function(){
+        touchEvent = false;
         // this is called on force end
         $('#pressure-event-triggered-val').val(0);
       },
       startDeepPress: function(event){
-        // console.log(drag);
-        // this is called on "force click" / "deep press", aka once the force is greater than 0.5
-        if(touchEvent && !scrolling && !drag) {
-          var $this = $(this);
-          longPressHeader($this,event.x,event.y);
-          $('#pressure-event-triggered-val').val(1);
-          touchEvent = false;
-        }
+          isDrag = $('.e-dragclone').is(':visible');
+          // console.log(isDrag);
+          // console.log(touchEvent);
+          // console.log(isDrag==true);
+          // this is called on "force click" / "deep press", aka once the force is greater than 0.5
+          if(!isDrag) {
+            var $this = $(this);
+            longPressHeader($this,event.x,event.y);
+            $('#pressure-event-triggered-val').val(1);
+            touchEvent = false;
+          }
       },
       endDeepPress: function(){
         touchEvent = false;
@@ -212,39 +225,45 @@ function bindOnLoadevents() {
 }
 
 function longPressHeader(ele,x,y){
-  var $this = ele;
-  var currElem = $this;
-  initializedContextMenuDialog();
-  currFreezedHeaderIndex =$('#current-frozed-index').val();
-  var contextMenu = $('#menu-right-click').parent();
-  $this.addClass('selected-menu-item');
-  currSelectedHeaderItem = currElem.find('div.e-headercelldiv');
-  indexCurrSelectedHeaderItem =  $this.attr('aria-colindex');
-  if(currFreezedHeaderIndex == indexCurrSelectedHeaderItem) {
-    $('#freeze-col').prop('checked', true);
-  } else {
-    $('#freeze-col').prop('checked', false);
-  }
+  setTimeout(() => {
+      var isDrag = $('.e-dragclone').is(':visible');
+      if(!isDrag) {
+      var $this = ele;
+      var currElem = $this;
+      initializedContextMenuDialog();
+      currFreezedHeaderIndex =$('#current-frozed-index').val();
+      var contextMenu = $('#menu-right-click').parent();
+      $this.addClass('selected-menu-item');
+      currSelectedHeaderItem = currElem.find('div.e-headercelldiv');
+      indexCurrSelectedHeaderItem =  $this.attr('aria-colindex');
+      if(currFreezedHeaderIndex == indexCurrSelectedHeaderItem) {
+        $('#freeze-col').prop('checked', true);
+      } else {
+        $('#freeze-col').prop('checked', false);
+      }
 
-  $('#current-selected-index').val(indexCurrSelectedHeaderItem);
-  var parentOffset = $this.parent().offset();
-  //or $(this).offset(); if you really just want the current element's offset
-  var relX = x;//e.pageX-10;// parentOffset.left;
-  var relY =  y;//e.pageY;//parentOffset.top+20;
-
-  dialogContextMenu1.dialog( "open" );
-  contextMenu.css("left",relX);
-  contextMenu.css("top",relY);
-  // console.log(relX+'--'+relY)
-  xOffset = relX;
-  yOffset = relY;
-  headerTextVal = currElem.find('span').text();
-  $('#current-selected-header-val').val(headerTextVal);
-  if($('#'+headerTextVal+'_filterBarcell').parents().eq(1).is(':visible')) {
-    $('#filter-col').prop('checked', true);
-  } else {
-    $('#filter-col').prop('checked', false);
-  }
+      $('#current-selected-index').val(indexCurrSelectedHeaderItem);
+      var parentOffset = $this.parent().offset();
+      //or $(this).offset(); if you really just want the current element's offset
+      var relX = x;//e.pageX-10;// parentOffset.left;
+      var relY =  y;//e.pageY;//parentOffset.top+20;
+  
+      dialogContextMenu1.dialog( "open" );
+      contextMenu.css("left",relX);
+      contextMenu.css("top",relY);
+      // console.log(relX+'--'+relY)
+      xOffset = relX;
+      yOffset = relY;
+      headerTextVal = currElem.find('span').text();
+      $('#current-selected-header-val').val(headerTextVal);
+      if($('#'+headerTextVal+'_filterBarcell').parents().eq(1).is(':visible')) {
+        $('#filter-col').prop('checked', true);
+      } else {
+        $('#filter-col').prop('checked', false);
+      }
+    }
+  }, 500);
+  
 }
 
 function treeHeaderRightClick() {
@@ -648,7 +667,7 @@ function bindMinColWidth(headers=null) {
     var cols = $(colGroup[i]).find('col');
       for(var y =0;y < cols.length;y++) {
         if(y>0) {
-          console.log(headers[counter].minColumnWidth);
+          // console.log(headers[counter].minColumnWidth);
           $(cols[y]).css({ 'min-width':headers[counter].minColumnWidth+'px' })
           counter++;
         }
